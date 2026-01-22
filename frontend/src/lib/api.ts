@@ -1,7 +1,12 @@
 import axios from 'axios';
 
+// Use relative URLs in production, localhost in development
+const baseURL = typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+  ? '/api'  // Production: use relative path
+  : 'http://localhost:3000/api';  // Development: use localhost
+
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL,
   headers: { 'Content-Type': 'application/json' },
 });
 

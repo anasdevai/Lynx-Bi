@@ -12,23 +12,50 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate file type
-    const allowedTypes = ['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
-    if (!allowedTypes.includes(file.type) && !file.name.match(/\.(csv|xlsx|xls)$/i)) {
-      return NextResponse.json({ error: 'Invalid file type. Allowed: CSV, Excel' }, { status: 400 });
+    const fileName = file.name.toLowerCase();
+    if (!fileName.endsWith('.csv') && !fileName.endsWith('.xlsx') && !fileName.endsWith('.xls') && !fileName.endsWith('.txt')) {
+      return NextResponse.json({ error: 'Invalid file type. Allowed: CSV, Excel, TXT' }, { status: 400 });
     }
 
     // Read file content
     const buffer = await file.arrayBuffer();
     const content = Buffer.from(buffer).toString('utf-8');
     
-    // Parse CSV (basic implementation)
-    const lines = content.split('\n').filter(line => line.trim());
-    const headers = lines[0].split(',').map(h => h.trim());
+    // Parse CSV (improved implementation)
+    const lines = content.split(/\r?\n/).filter(line => line.trim());
+    
+    if (lines.length === 0) {
+      return NextResponse.json({ error: 'File is empty' }, { status: 400 });
+    }
+    
+    // Parse CSV with proper handling of quoted values
+    const parseCSVLine = (line: string): string[] => {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      result.push(current.trim());
+      return result;
+    };
+    
+    const headers = parseCSVLine(lines[0]);
     const rows = lines.slice(1).map(line => {
-      const values = line.split(',');
+      const values = parseCSVLine(line);
       const row: any = {};
       headers.forEach((header, i) => {
-        row[header] = values[i]?.trim() || '';
+        row[header] = values[i] || '';
       });
       return row;
     });
@@ -67,13 +94,17 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Upload error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ 
+      error: error.message || 'Upload failed',
+      details: error.toString()
+    }, { status: 500 });
   }
 }
 
 function inferType(value: any): string {
-  if (!value) return 'string';
-  if (!isNaN(Number(value))) return 'number';
-  if (value.match(/^\d{4}-\d{2}-\d{2}/)) return 'date';
+  if (!value || value === '') return 'string';
+  const trimmed = String(value).trim();
+  if (!isNaN(Number(trimmed)) && trimmed !== '') return 'number';
+  if (trimmed.match(/^\d{4}-\d{2}-\d{2}/)) return 'date';
   return 'string';
 }

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// In-memory dashboard storage
-const dashboards = new Map();
+import { dashboards } from '@/lib/storage';
 
 export async function GET() {
   try {
@@ -34,5 +32,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-
-export { dashboards };

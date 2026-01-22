@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dashboards } from '../route';
+import { dashboards } from '@/lib/storage';
 
 export async function GET(
   request: NextRequest,

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-
-// In-memory storage for Vercel (temporary - consider using external storage for production)
-const datasets = new Map();
+import { datasets } from '@/lib/storage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -79,5 +77,3 @@ function inferType(value: any): string {
   if (value.match(/^\d{4}-\d{2}-\d{2}/)) return 'date';
   return 'string';
 }
-
-export { datasets };

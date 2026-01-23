@@ -4,16 +4,21 @@ import { datasets } from '@/lib/storage';
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Upload API called');
     const formData = await request.formData();
     const file = formData.get('file') as File;
     
+    console.log('File received:', file?.name, file?.size);
+    
     if (!file) {
+      console.error('No file in request');
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
     // Validate file type
     const fileName = file.name.toLowerCase();
     if (!fileName.endsWith('.csv') && !fileName.endsWith('.xlsx') && !fileName.endsWith('.xls') && !fileName.endsWith('.txt')) {
+      console.error('Invalid file type:', fileName);
       return NextResponse.json({ error: 'Invalid file type. Allowed: CSV, Excel, TXT' }, { status: 400 });
     }
 
@@ -21,12 +26,17 @@ export async function POST(request: NextRequest) {
     const buffer = await file.arrayBuffer();
     const content = Buffer.from(buffer).toString('utf-8');
     
+    console.log('File content length:', content.length);
+    
     // Parse CSV (improved implementation)
     const lines = content.split(/\r?\n/).filter(line => line.trim());
     
     if (lines.length === 0) {
+      console.error('File is empty');
       return NextResponse.json({ error: 'File is empty' }, { status: 400 });
     }
+    
+    console.log('Lines parsed:', lines.length);
     
     // Parse CSV with proper handling of quoted values
     const parseCSVLine = (line: string): string[] => {
@@ -60,6 +70,9 @@ export async function POST(request: NextRequest) {
       return row;
     });
 
+    console.log('Headers:', headers);
+    console.log('Rows parsed:', rows.length);
+
     // Infer schema
     const schema = {
       columns: headers.map(header => ({
@@ -84,14 +97,20 @@ export async function POST(request: NextRequest) {
     
     datasets.set(datasetId, dataset);
     
-    return NextResponse.json({
+    console.log('Dataset stored:', datasetId, 'Total datasets:', datasets.size);
+    
+    const response = {
       id: datasetId,
       name: dataset.name,
       schema,
       rowCount: dataset.rowCount,
       columnCount: dataset.columnCount,
       preview: rows.slice(0, 100)
-    });
+    };
+    
+    console.log('Returning response:', response.id, response.name);
+    
+    return NextResponse.json(response);
   } catch (error: any) {
     console.error('Upload error:', error);
     return NextResponse.json({ 

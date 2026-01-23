@@ -24,6 +24,6 @@ export async function GET() {
     })),
     timestamp: new Date().toISOString(),
     env: process.env.NODE_ENV,
-    kvConfigured: !!process.env.KV_REST_API_URL,
+    redisConfigured: !!(process.env.REDIS_URL || process.env.KV_URL),
   });
 }

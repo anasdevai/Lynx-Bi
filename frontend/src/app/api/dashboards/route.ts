@@ -3,8 +3,8 @@ import { dashboards } from '@/lib/storage';
 
 export async function GET() {
   try {
-    const dashboardList = Array.from(dashboards.values());
-    return NextResponse.json(dashboardList);
+    const allDashboards = await dashboards.getAll();
+    return NextResponse.json(allDashboards);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       updatedAt: new Date().toISOString()
     };
     
-    dashboards.set(id, dashboard);
+    await dashboards.set(id, dashboard);
     
     return NextResponse.json(dashboard);
   } catch (error: any) {

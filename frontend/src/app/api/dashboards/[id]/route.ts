@@ -6,7 +6,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const dashboard = dashboards.get(params.id);
+    const dashboard = await dashboards.get(params.id);
     
     if (!dashboard) {
       return NextResponse.json({ error: 'Dashboard not found' }, { status: 404 });
@@ -24,7 +24,7 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
-    const dashboard = dashboards.get(params.id);
+    const dashboard: any = await dashboards.get(params.id);
     
     if (!dashboard) {
       return NextResponse.json({ error: 'Dashboard not found' }, { status: 404 });
@@ -36,7 +36,7 @@ export async function PUT(
       updatedAt: new Date().toISOString()
     };
     
-    dashboards.set(params.id, updated);
+    await dashboards.set(params.id, updated);
     
     return NextResponse.json(updated);
   } catch (error: any) {
@@ -49,12 +49,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const deleted = dashboards.delete(params.id);
-    
-    if (!deleted) {
-      return NextResponse.json({ error: 'Dashboard not found' }, { status: 404 });
-    }
-    
+    await dashboards.delete(params.id);
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

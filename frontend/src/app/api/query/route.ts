@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { datasetId, filters, aggregations, groupBy } = body;
     
-    const dataset = datasets.get(datasetId);
+    const dataset: any = await datasets.get(datasetId);
     if (!dataset) {
       return NextResponse.json({ error: 'Dataset not found' }, { status: 404 });
     }

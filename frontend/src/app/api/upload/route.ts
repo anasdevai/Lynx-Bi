@@ -95,9 +95,10 @@ export async function POST(request: NextRequest) {
       data: rows
     };
     
-    datasets.set(datasetId, dataset);
+    await datasets.set(datasetId, dataset);
     
-    console.log('Dataset stored:', datasetId, 'Total datasets:', datasets.size);
+    const size = await datasets.size();
+    console.log('Dataset stored:', datasetId, 'Total datasets:', size);
     
     const response = {
       id: datasetId,

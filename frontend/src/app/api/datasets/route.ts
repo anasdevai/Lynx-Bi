@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 import { datasets } from '@/lib/storage';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
-    console.log('GET /api/datasets called, datasets.size:', datasets.size);
-    const datasetList = Array.from(datasets.values()).map(ds => ({
+    const size = await datasets.size();
+    console.log('GET /api/datasets called, datasets count:', size);
+    
+    const allDatasets = await datasets.getAll();
+    const datasetList = allDatasets.map((ds: any) => ({
       id: ds.id,
       name: ds.name,
       rowCount: ds.rowCount,

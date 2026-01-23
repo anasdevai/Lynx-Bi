@@ -6,7 +6,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const dataset = datasets.get(params.id);
+    const dataset = await datasets.get(params.id);
     
     if (!dataset) {
       return NextResponse.json({ error: 'Dataset not found' }, { status: 404 });
@@ -23,12 +23,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const deleted = datasets.delete(params.id);
-    
-    if (!deleted) {
-      return NextResponse.json({ error: 'Dataset not found' }, { status: 404 });
-    }
-    
+    await datasets.delete(params.id);
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
